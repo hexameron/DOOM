@@ -1,0 +1,39 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+configure:589: checking host system type
+configure:610: checking target system type
+configure:628: checking build system type
+configure:695: checking for a BSD compatible install
+configure:748: checking whether build environment is sane
+configure:805: checking whether make sets ${MAKE}
+configure:851: checking for working aclocal
+configure:864: checking for working autoconf
+configure:877: checking for working automake
+configure:890: checking for working autoheader
+configure:903: checking for working makeinfo
+configure:923: checking for gcc
+configure:1036: checking whether the C compiler (gcc  ) works
+configure:1052: gcc -o conftest    conftest.c  1>&5
+configure:1078: checking whether the C compiler (gcc  ) is a cross-compiler
+configure:1083: checking whether we are using GNU C
+configure:1111: checking whether gcc accepts -g
+configure:1144: checking how to run the C preprocessor
+configure:1224: checking for ANSI C header files
+configure:1328: checking for size_t
+configure:1362: checking for inline
+configure:1402: checking whether byte ordering is bigendian
+configure:1504: checking for X
+configure:2336: checking for sqrt in -lm
+configure:2383: checking for XShmCreateImage in -lXext
+configure:2427: checking for vga_setpalvec in -lvga
+configure:2508: checking for sdl-config
+configure:2543: checking for SDL - version >= 1.0.1
+configure:2628: gcc -o conftest -g -O2 -INONE -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT   conftest.c -lm    -L/usr/lib/arm-linux-gnueabihf -lSDL 1>&5
+configure:2706: checking for open_music in -lmixer
+configure:2750: checking for stricmp
+configure:2802: checking for strnicmp
+configure:2858: checking for linux/joystick.h
+configure:2900: checking for sys/soundcard.h
+configure:2940: checking for machine/soundcard.h
+configure:2980: checking for linux/soundcard.h

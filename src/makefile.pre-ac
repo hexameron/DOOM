@@ -1,0 +1,561 @@
+################################################################
+#
+# $Id: makefile.pre-ac,v 1.35 1999/09/05 12:34:20 cphipps Exp $
+#
+################################################################
+
+CC = gcc
+
+# the command you use to delete files
+RM = rm -f
+
+# the command to strip a binary file of debugging/symbol info
+STRIP = strip
+
+# Compiler options. I have gcc 2.8.1 - these are standard options though, so
+# probably don't need changing
+# NOTE: using -fschedule-insns breaks the monster sight code for some reason
+C_DEFS = -DO_BINARY=0 -Dstrnicmp=strncasecmp -Dstricmp=strcasecmp -DI386 -DLINUX -DHIGHRES
+# NOTE: add -DNO_JOY_CODE if linux/joystick.h is not present
+# FreeBSD users replace -DLINUX by -DFREEBSD
+# non-i386-Linux users remove the -DI386
+
+C_WARNINGS = -Wall -Winline -Wcast-align -Wwrite-strings -Werror -Wno-parentheses
+# Netwinder/risc users try removing -Wcast-align -Werror
+# Remove -Werror if you get warnings, hopefuly they aren't important
+
+C_OPTIM = -O2 -ffast-math -m486 -fexpensive-optimizations -fomit-frame-pointer
+# non-486 users remove the -m486
+
+CFLAGS = $(C_OPTIM) $(C_DEFS) $(C_WARNINGS)
+# you may need to add -I/usr/X11R6/include
+
+# some handy non-i386 flags
+ARMFLAGS = -mapcs-32 -Wcast-align
+HACKARMFLAGS = -m6
+PACKSTRUCTS = -fpack-struct
+SHORTLOADBYTES = -mshort-load-bytes
+
+LDFLAGS = -L/usr/X11R6/lib
+# FreeBSD users add -lm
+
+# subdirectory for objects (depends on target, to allow you
+# to build debug and release versions simultaneously)
+
+O=.
+
+# object files
+OBJS=   $(O)/doomdef.o      \
+        $(O)/doomstat.o     \
+        $(O)/dstrings.o     \
+        $(O)/l_system.o     \
+        $(O)/l_sound.o      \
+        $(O)/l_udp.o        \
+        $(O)/tables.o       \
+        $(O)/f_finale.o     \
+        $(O)/f_wipe.o       \
+        $(O)/d_main.o       \
+        $(O)/d_client.o     \
+        $(O)/d_items.o      \
+        $(O)/g_game.o       \
+        $(O)/m_menu.o       \
+        $(O)/m_misc.o       \
+        $(O)/m_argv.o       \
+        $(O)/m_bbox.o       \
+        $(O)/m_cheat.o      \
+        $(O)/m_random.o     \
+        $(O)/am_map.o       \
+        $(O)/p_ceilng.o     \
+        $(O)/p_doors.o      \
+        $(O)/p_enemy.o      \
+        $(O)/p_floor.o      \
+        $(O)/p_inter.o      \
+        $(O)/p_lights.o     \
+        $(O)/p_map.o        \
+        $(O)/p_maputl.o     \
+        $(O)/p_plats.o      \
+        $(O)/p_pspr.o       \
+        $(O)/p_setup.o      \
+        $(O)/p_sight.o      \
+        $(O)/p_spec.o       \
+        $(O)/p_switch.o     \
+        $(O)/p_mobj.o       \
+        $(O)/p_telept.o     \
+        $(O)/p_tick.o       \
+        $(O)/p_saveg.o      \
+        $(O)/p_user.o       \
+        $(O)/r_bsp.o        \
+        $(O)/r_data.o       \
+        $(O)/r_draw.o       \
+        $(O)/r_main.o       \
+        $(O)/r_plane.o      \
+        $(O)/r_segs.o       \
+        $(O)/r_sky.o        \
+        $(O)/r_things.o     \
+        $(O)/w_wad.o        \
+        $(O)/wi_stuff.o     \
+        $(O)/v_video.o      \
+        $(O)/st_lib.o       \
+        $(O)/st_stuff.o     \
+        $(O)/hu_stuff.o     \
+        $(O)/hu_lib.o       \
+        $(O)/s_sound.o      \
+        $(O)/z_zone.o       \
+	$(O)/z_bmalloc.o    \
+        $(O)/info.o         \
+        $(O)/sounds.o       \
+        $(O)/l_main.o       \
+        $(O)/p_genlin.o     \
+        $(O)/d_deh.o	    \
+	$(O)/l_joy.o        \
+	$(O)/lprintf.o      \
+        $(O)/drawspan.o     \
+        $(O)/drawcol.o      
+
+SERVEROBJS = \
+	$(O)/d_server.o	\
+	$(O)/l_udp.o
+
+# non-i386 users remove drawspan.o and drawcol.o from the above list
+
+# non-linux-i386 users use : $(O)/lxdoom $(O)/sndserv 
+all	: $(O)/lxdoom $(O)/lsdoom $(O)/sndserv server TAGS
+
+TAGS	:
+	etags *.c *.s
+
+server  : $(O)/lxdoom-game-server
+
+install : $(O)/lxdoom $(O)/lsdoom $(O)/sndserv
+	install -dm 777 -g 0 -o 0 /usr/local/games/wads
+	install -sm 755 -g 0 -o 0 $(O)/lxdoom $(O)/lsdoom $(O)/sndserv $(O)/lxdoom-game-server /usr/local/games
+	chmod a+s /usr/local/games/lsdoom
+	echo Create links to your doom.wad and doom2.wad from /usr/local/games/wads
+
+strip:
+	-$(STRIP) lxdoom sndserv lsdoom lgdoom l3dfxdoom lxdoom-game-server
+
+setuid  : $(O)/lsdoom
+	su -c 'chown root lsdoom l3dfxdoom ; chmod ug+rwxs lsdoom l3dfxdoom '
+
+clean:
+	-$(RM) lxdoom
+	-$(RM) lsdoom
+	-$(RM) sndserv
+	-$(RM) lgdoom
+	-$(RM) lxdoom-game-server
+	-$(RM) l3dfxdoom
+	-$(RM) $(O)/*.o
+	-$(RM) *~
+	-$(RM) core
+	-$(RM) gmon.out
+
+# Special rules for risc targets - uncomment this block
+# Thanks go to Jamie Guinan
+# Probably out of date, but it's a start I hope.
+##
+## A few modules need special handling.
+##
+#$(O)/l_net.o:	l_net.c
+#	$(CC) $(CFLAGS) $(ARMFLAGS) $(SHORTLOADBYTES) -c $< -o $@
+#
+#$(O)/m_menu.o:	m_menu.c
+#	$(CC) $(CFLAGS) $(HACKARMFLAGS) -c $< -o $@
+#
+#$(O)/f_wipe.o: f_wipe.c
+#	$(CC) $(CFLAGS) $(ARMFLAGS) $(SHORTLOADBYTES) -c $< -o $@
+#
+#$(O)/m_misc.o : m_misc.c
+#	$(CC) $(CFLAGS) $(ARMFLAGS) $(SHORTLOADBYTES) -c $< -o $@
+#
+#$(O)/d_net.o : d_net.c
+#	$(CC) $(CFLAGS) $(ARMFLAGS) $(SHORTLOADBYTES) -c $< -o $@
+#
+#$(O)/z_zone.o : z_zone.c
+#	$(CC) $(CFLAGS) $(ARMFLAGS) $(SHORTLOADBYTES) -c $< -o $@
+#
+#$(O)/d_main.o : d_main.c
+#	$(CC) $(CFLAGS) $(ARMFLAGS) -c $< -o $@
+#
+#$(O)/m_cheat.o : m_cheat.c
+#	$(CC) $(CFLAGS) $(ARMFLAGS) -c $< -o $@
+#
+##
+## Everything else uses -fpack-struct
+##
+#$(O)/%.o:	%.c
+#	$(CC) $(PACKSTRUCTS) $(CFLAGS) $(ARMFLAGS) -c $< -o $@
+#
+
+#
+# Rules for building final executables.
+#
+
+$(O)/%.s:	%.c
+	$(CC) $(CFLAGS) -S $<
+
+$(O)/lxdoom: $(OBJS) $(O)/l_video_x.o $(O)/l_video_trans.o $(O)/version.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) $(O)/l_video_x.o $(O)/version.o $(O)/l_video_trans.o -o $@ -lX11 -lXext
+	ls -l lxdoom
+
+$(O)/lxdoom-game-server: $(SERVEROBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SERVEROBJS) -o $@
+
+$(O)/l3dfxdoom : $(OBJS) $(O)/l_video_glide.o $(O)/version.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) $(O)/l_video_glide.o $(O)/version.o -o $@ -lglide2x -L/usr/local/glide/lib -lm
+
+$(O)/lgdoom: $(OBJS) $(O)/l_video_ggi.o $(O)/l_video_trans.o $(O)/version.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) $(O)/l_video_ggi.o $(O)/version.o $(O)/l_video_trans.o -o $@ -lggi
+
+$(O)/lsdoom: $(OBJS) $(O)/l_video_svgalib.o $(O)/version.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) $(O)/l_video_svgalib.o $(O)/version.o  -o $@ -lvga
+
+$(O)/sndserv: $(O)/version.o $(O)/l_soundsrv.o $(O)/sounds.o $(O)/l_soundgen.o 
+	$(CC) $(CFLAGS) $(LDFLAGS) $(O)/version.o $(O)/l_soundgen.o $(O)/l_soundsrv.o $(O)/sounds.o -o $@
+
+# On any change to core files, update the date stamp
+version.o: $(OBJS)
+
+# Makedepend target
+depend: 
+	makedepend -Y. $(C_DEFS) *.c
+
+###############################################################################
+# $Log: makefile.pre-ac,v $
+# Revision 1.35  1999/09/05 12:34:20  cphipps
+# Updated dependencies
+# Added target to create TAGS file with etags
+# Clean profiling data in clean target
+#
+# Revision 1.34  1999/08/30 14:55:50  cphipps
+# Added rule to make assembler source from C source, for help in optimising
+# Updaed dependencies
+#
+# Revision 1.32  1999/05/14 08:08:13  cphipps
+# Updated dependencies
+#
+# Revision 1.31  1999/04/01 09:38:54  cphipps
+# Changed source files for client-server
+# Added server target
+# Updated dependencies
+#
+# Revision 1.31  1999/03/30 06:41:40  cphipps
+# Changed some source files o the new cilent-server versions
+# Added server target
+# Updated dependencies
+#
+# Revision 1.30  1999/03/25 15:43:10  cphipps
+# Cleaned old log from the file, as it was not very informative
+# (can always be got from my RCS logs anyway)
+# Use makedepend to generate the file dependencies
+# Add depend target to run makedepend with right params
+# Rearrange the compiler params to suit that, all -D's in C_DEFS now
+# Add back in -DNO_JOY_CODE comment, rearrange comments a bit
+#
+###############################################################################
+# CPhipps - makedepend stuff follows...
+# DO NOT DELETE
+
+am_map.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+am_map.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h i_system.h
+am_map.o: d_ticcmd.h tables.h info.h d_think.h p_mobj.h st_stuff.h d_event.h
+am_map.o: r_main.h r_data.h r_defs.h r_state.h p_setup.h p_maputl.h w_wad.h
+am_map.o: v_video.h p_spec.h am_map.h dstrings.h d_englsh.h d_deh.h lprintf.h
+am_map.o: g_game.h
+d_client.o: doomtype.h doomstat.h doomdata.h d_net.h d_player.h d_items.h
+d_client.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+d_client.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h d_main.h
+d_client.o: d_event.h w_wad.h g_game.h m_menu.h protocol.h i_network.h
+d_client.o: lprintf.h
+d_deh.o: doomdef.h z_zone.h m_swap.h version.h doomstat.h doomdata.h
+d_deh.o: doomtype.h d_net.h d_player.h d_items.h p_pspr.h m_fixed.h
+d_deh.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h sounds.h
+d_deh.o: m_cheat.h p_inter.h g_game.h d_event.h w_wad.h lprintf.h dstrings.h
+d_deh.o: d_englsh.h
+d_items.o: info.h d_think.h d_items.h doomdef.h z_zone.h m_swap.h version.h
+d_main.o: doomdef.h z_zone.h m_swap.h version.h doomstat.h doomdata.h
+d_main.o: doomtype.h d_net.h d_player.h d_items.h p_pspr.h m_fixed.h
+d_main.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h dstrings.h
+d_main.o: d_englsh.h sounds.h w_wad.h s_sound.h v_video.h r_data.h r_defs.h
+d_main.o: r_state.h f_finale.h d_event.h f_wipe.h m_argv.h m_misc.h m_menu.h
+d_main.o: i_sound.h i_video.h g_game.h hu_stuff.h wi_stuff.h st_stuff.h
+d_main.o: am_map.h p_setup.h r_draw.h r_main.h d_main.h d_deh.h lprintf.h
+d_net.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+d_net.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h i_system.h
+d_net.o: d_ticcmd.h tables.h info.h d_think.h p_mobj.h m_menu.h d_event.h
+d_net.o: i_net.h g_game.h lprintf.h m_argv.h am_map.h
+d_server.o: doomtype.h protocol.h d_ticcmd.h m_swap.h i_network.h
+doomdef.o: doomdef.h z_zone.h m_swap.h version.h
+doomstat.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+doomstat.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+doomstat.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h
+dstrings.o: dstrings.h d_englsh.h
+f_finale.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+f_finale.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+f_finale.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h
+f_finale.o: d_event.h v_video.h r_data.h r_defs.h r_state.h w_wad.h s_sound.h
+f_finale.o: sounds.h d_deh.h f_finale.h hu_stuff.h
+f_wipe.o: z_zone.h doomdef.h m_swap.h version.h i_video.h doomtype.h
+f_wipe.o: v_video.h r_data.h r_defs.h m_fixed.h i_system.h d_ticcmd.h
+f_wipe.o: d_think.h p_mobj.h tables.h doomdata.h info.h r_state.h d_player.h
+f_wipe.o: d_items.h p_pspr.h m_random.h f_wipe.h
+g_game.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+g_game.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h i_system.h
+g_game.o: d_ticcmd.h tables.h info.h d_think.h p_mobj.h f_finale.h d_event.h
+g_game.o: m_argv.h m_misc.h m_menu.h m_random.h p_setup.h p_saveg.h p_tick.h
+g_game.o: d_main.h w_wad.h wi_stuff.h hu_stuff.h st_stuff.h am_map.h r_main.h
+g_game.o: r_data.h r_defs.h r_state.h r_draw.h p_map.h s_sound.h dstrings.h
+g_game.o: d_englsh.h sounds.h r_sky.h d_deh.h p_inter.h g_game.h lprintf.h
+g_game.o: z_bmalloc.h
+hu_lib.o: doomdef.h z_zone.h m_swap.h version.h doomstat.h doomdata.h
+hu_lib.o: doomtype.h d_net.h d_player.h d_items.h p_pspr.h m_fixed.h
+hu_lib.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h v_video.h
+hu_lib.o: r_data.h r_defs.h r_state.h hu_lib.h hu_stuff.h d_event.h r_main.h
+hu_lib.o: r_draw.h
+hu_stuff.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+hu_stuff.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+hu_stuff.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h
+hu_stuff.o: hu_stuff.h d_event.h hu_lib.h r_defs.h v_video.h r_data.h
+hu_stuff.o: r_state.h st_stuff.h w_wad.h s_sound.h dstrings.h d_englsh.h
+hu_stuff.o: sounds.h d_deh.h
+info.o: doomdef.h z_zone.h m_swap.h version.h sounds.h m_fixed.h i_system.h
+info.o: d_ticcmd.h doomtype.h p_mobj.h tables.h d_think.h doomdata.h info.h
+info.o: w_wad.h
+l_joy.o: doomdef.h z_zone.h m_swap.h version.h doomtype.h m_argv.h d_event.h
+l_joy.o: d_main.h w_wad.h i_joy.h
+l_main.o: doomdef.h z_zone.h m_swap.h version.h m_argv.h d_main.h d_event.h
+l_main.o: doomtype.h w_wad.h i_system.h d_ticcmd.h i_video.h
+l_net.o: i_system.h d_ticcmd.h doomtype.h d_event.h d_net.h d_player.h
+l_net.o: d_items.h doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+l_net.o: tables.h info.h d_think.h p_mobj.h doomdata.h m_argv.h doomstat.h
+l_net.o: i_net.h lprintf.h
+l_sound.o: z_zone.h i_system.h d_ticcmd.h doomtype.h i_sound.h sounds.h
+l_sound.o: m_argv.h m_misc.h w_wad.h doomdef.h m_swap.h version.h doomstat.h
+l_sound.o: doomdata.h d_net.h d_player.h d_items.h p_pspr.h m_fixed.h
+l_sound.o: tables.h info.h d_think.h p_mobj.h d_main.h d_event.h lprintf.h
+l_sound.o: l_soundsrv.h
+l_soundgen.o: l_soundgen.h sounds.h m_swap.h
+l_soundsrv.o: sounds.h l_soundgen.h l_soundsrv.h
+l_system.o: i_system.h d_ticcmd.h doomtype.h i_sound.h sounds.h doomstat.h
+l_system.o: doomdata.h d_net.h d_player.h d_items.h doomdef.h z_zone.h
+l_system.o: m_swap.h version.h p_pspr.h m_fixed.h tables.h info.h d_think.h
+l_system.o: p_mobj.h m_misc.h g_game.h d_event.h w_wad.h m_random.h
+l_udp.o: protocol.h doomtype.h d_ticcmd.h m_swap.h i_network.h m_argv.h
+l_udp.o: i_system.h
+l_video_ggi.o: z_zone.h i_video.h doomtype.h i_system.h d_ticcmd.h m_argv.h
+l_video_ggi.o: doomstat.h doomdata.h d_net.h d_player.h d_items.h doomdef.h
+l_video_ggi.o: m_swap.h version.h p_pspr.h m_fixed.h tables.h info.h
+l_video_ggi.o: d_think.h p_mobj.h v_video.h r_data.h r_defs.h r_state.h
+l_video_ggi.o: d_event.h d_main.h w_wad.h r_draw.h i_joy.h l_video_trans.h
+l_video_glide.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h
+l_video_glide.o: d_items.h doomdef.h z_zone.h m_swap.h version.h p_pspr.h
+l_video_glide.o: m_fixed.h i_system.h d_ticcmd.h tables.h info.h d_think.h
+l_video_glide.o: p_mobj.h d_main.h d_event.h w_wad.h i_video.h v_video.h
+l_video_glide.o: r_data.h r_defs.h r_state.h r_draw.h
+l_video_svgalib.o: z_zone.h i_video.h doomtype.h i_system.h d_ticcmd.h
+l_video_svgalib.o: doomdef.h m_swap.h version.h doomstat.h doomdata.h d_net.h
+l_video_svgalib.o: d_player.h d_items.h p_pspr.h m_fixed.h tables.h info.h
+l_video_svgalib.o: d_think.h p_mobj.h v_video.h r_data.h r_defs.h r_state.h
+l_video_svgalib.o: r_draw.h d_event.h d_main.h w_wad.h m_argv.h i_joy.h
+l_video_trans.o: doomtype.h v_video.h doomdef.h z_zone.h m_swap.h version.h
+l_video_trans.o: r_data.h r_defs.h m_fixed.h i_system.h d_ticcmd.h d_think.h
+l_video_trans.o: p_mobj.h tables.h doomdata.h info.h r_state.h d_player.h
+l_video_trans.o: d_items.h p_pspr.h i_video.h l_video_trans.h
+l_video_x.o: i_system.h d_ticcmd.h doomtype.h m_argv.h doomstat.h doomdata.h
+l_video_x.o: d_net.h d_player.h d_items.h doomdef.h z_zone.h m_swap.h
+l_video_x.o: version.h p_pspr.h m_fixed.h tables.h info.h d_think.h p_mobj.h
+l_video_x.o: v_video.h r_data.h r_defs.h r_state.h r_draw.h d_main.h
+l_video_x.o: d_event.h w_wad.h l_video_trans.h i_joy.h i_video.h s_sound.h
+l_video_x.o: sounds.h
+lprintf.o: lprintf.h
+m_argv.o: m_argv.h
+m_bbox.o: m_bbox.h z_zone.h m_fixed.h i_system.h d_ticcmd.h doomtype.h
+m_cheat.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+m_cheat.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+m_cheat.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h g_game.h
+m_cheat.o: d_event.h r_data.h r_defs.h r_state.h p_inter.h m_cheat.h m_argv.h
+m_cheat.o: s_sound.h sounds.h dstrings.h d_englsh.h r_main.h d_deh.h
+m_menu.o: doomdef.h z_zone.h m_swap.h version.h doomstat.h doomdata.h
+m_menu.o: doomtype.h d_net.h d_player.h d_items.h p_pspr.h m_fixed.h
+m_menu.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h dstrings.h
+m_menu.o: d_englsh.h d_main.h d_event.h w_wad.h v_video.h r_data.h r_defs.h
+m_menu.o: r_state.h r_main.h hu_stuff.h g_game.h s_sound.h sounds.h m_menu.h
+m_menu.o: d_deh.h m_misc.h lprintf.h am_map.h
+m_misc.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+m_misc.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h i_system.h
+m_misc.o: d_ticcmd.h tables.h info.h d_think.h p_mobj.h m_argv.h g_game.h
+m_misc.o: d_event.h m_menu.h am_map.h w_wad.h i_sound.h sounds.h i_video.h
+m_misc.o: v_video.h r_data.h r_defs.h r_state.h hu_stuff.h st_stuff.h
+m_misc.o: dstrings.h d_englsh.h m_misc.h s_sound.h i_joy.h lprintf.h
+m_random.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+m_random.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+m_random.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h
+m_random.o: m_random.h
+p_ceilng.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_ceilng.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+p_ceilng.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h r_main.h
+p_ceilng.o: r_data.h r_defs.h r_state.h p_spec.h p_tick.h s_sound.h sounds.h
+p_doors.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_doors.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+p_doors.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h p_spec.h
+p_doors.o: r_defs.h p_tick.h s_sound.h sounds.h r_main.h r_data.h r_state.h
+p_doors.o: dstrings.h d_englsh.h d_deh.h
+p_enemy.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_enemy.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+p_enemy.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h
+p_enemy.o: m_random.h r_main.h r_data.h r_defs.h r_state.h p_maputl.h p_map.h
+p_enemy.o: p_setup.h p_spec.h s_sound.h sounds.h p_inter.h g_game.h d_event.h
+p_enemy.o: p_enemy.h p_tick.h
+p_floor.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_floor.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+p_floor.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h r_main.h
+p_floor.o: r_data.h r_defs.h r_state.h p_map.h p_spec.h p_tick.h s_sound.h
+p_floor.o: sounds.h
+p_genlin.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_genlin.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+p_genlin.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h r_main.h
+p_genlin.o: r_data.h r_defs.h r_state.h p_spec.h p_tick.h m_random.h
+p_genlin.o: s_sound.h sounds.h
+p_inter.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_inter.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+p_inter.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h
+p_inter.o: dstrings.h d_englsh.h m_random.h am_map.h d_event.h r_main.h
+p_inter.o: r_data.h r_defs.h r_state.h s_sound.h sounds.h d_deh.h p_tick.h
+p_inter.o: p_inter.h
+p_lights.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_lights.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+p_lights.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h
+p_lights.o: m_random.h r_main.h r_data.h r_defs.h r_state.h p_spec.h p_tick.h
+p_map.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_map.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h i_system.h
+p_map.o: d_ticcmd.h tables.h info.h d_think.h p_mobj.h r_main.h r_data.h
+p_map.o: r_defs.h r_state.h p_maputl.h p_map.h p_setup.h p_spec.h s_sound.h
+p_map.o: sounds.h p_inter.h m_random.h m_bbox.h z_bmalloc.h
+p_maputl.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_maputl.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+p_maputl.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h m_bbox.h
+p_maputl.o: r_main.h r_data.h r_defs.h r_state.h p_maputl.h p_map.h p_setup.h
+p_mobj.o: doomdef.h z_zone.h m_swap.h version.h doomstat.h doomdata.h
+p_mobj.o: doomtype.h d_net.h d_player.h d_items.h p_pspr.h m_fixed.h
+p_mobj.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h m_random.h
+p_mobj.o: r_main.h r_data.h r_defs.h r_state.h p_maputl.h p_map.h p_tick.h
+p_mobj.o: sounds.h st_stuff.h d_event.h hu_stuff.h s_sound.h g_game.h
+p_plats.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_plats.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+p_plats.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h
+p_plats.o: m_random.h r_main.h r_data.h r_defs.h r_state.h p_spec.h p_tick.h
+p_plats.o: s_sound.h sounds.h
+p_pspr.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_pspr.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h i_system.h
+p_pspr.o: d_ticcmd.h tables.h info.h d_think.h p_mobj.h r_main.h r_data.h
+p_pspr.o: r_defs.h r_state.h p_map.h p_inter.h p_enemy.h m_random.h s_sound.h
+p_pspr.o: sounds.h d_event.h
+p_saveg.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_saveg.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+p_saveg.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h r_main.h
+p_saveg.o: r_data.h r_defs.h r_state.h p_maputl.h p_spec.h p_tick.h p_saveg.h
+p_saveg.o: m_random.h am_map.h d_event.h p_enemy.h
+p_setup.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_setup.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+p_setup.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h m_bbox.h
+p_setup.o: m_argv.h g_game.h d_event.h w_wad.h r_main.h r_data.h r_defs.h
+p_setup.o: r_state.h r_things.h p_maputl.h p_map.h p_setup.h p_spec.h
+p_setup.o: p_tick.h p_enemy.h s_sound.h lprintf.h
+p_sight.o: r_main.h d_player.h d_items.h doomdef.h z_zone.h m_swap.h
+p_sight.o: version.h p_pspr.h m_fixed.h i_system.h d_ticcmd.h doomtype.h
+p_sight.o: tables.h info.h d_think.h p_mobj.h doomdata.h r_data.h r_defs.h
+p_sight.o: r_state.h p_maputl.h p_setup.h m_bbox.h
+p_spec.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_spec.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h i_system.h
+p_spec.o: d_ticcmd.h tables.h info.h d_think.h p_mobj.h p_spec.h r_defs.h
+p_spec.o: p_tick.h p_setup.h m_random.h d_englsh.h m_argv.h w_wad.h r_main.h
+p_spec.o: r_data.h r_state.h p_maputl.h p_map.h g_game.h d_event.h p_inter.h
+p_spec.o: s_sound.h sounds.h m_bbox.h d_deh.h r_plane.h
+p_switch.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_switch.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+p_switch.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h w_wad.h
+p_switch.o: r_main.h r_data.h r_defs.h r_state.h p_spec.h g_game.h d_event.h
+p_switch.o: s_sound.h sounds.h
+p_telept.o: doomdef.h z_zone.h m_swap.h version.h p_spec.h r_defs.h m_fixed.h
+p_telept.o: i_system.h d_ticcmd.h doomtype.h d_think.h p_mobj.h tables.h
+p_telept.o: doomdata.h info.h d_player.h d_items.h p_pspr.h p_maputl.h
+p_telept.o: p_map.h r_main.h r_data.h r_state.h p_tick.h s_sound.h sounds.h
+p_telept.o: p_user.h
+p_tick.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_tick.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h i_system.h
+p_tick.o: d_ticcmd.h tables.h info.h d_think.h p_mobj.h p_user.h p_spec.h
+p_tick.o: r_defs.h p_tick.h
+p_user.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+p_user.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h i_system.h
+p_user.o: d_ticcmd.h tables.h info.h d_think.h p_mobj.h d_event.h r_main.h
+p_user.o: r_data.h r_defs.h r_state.h p_map.h p_spec.h p_user.h
+r_bsp.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+r_bsp.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h i_system.h
+r_bsp.o: d_ticcmd.h tables.h info.h d_think.h p_mobj.h m_bbox.h r_main.h
+r_bsp.o: r_data.h r_defs.h r_state.h r_segs.h r_plane.h r_things.h r_bsp.h
+r_data.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+r_data.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h i_system.h
+r_data.o: d_ticcmd.h tables.h info.h d_think.h p_mobj.h w_wad.h r_main.h
+r_data.o: r_data.h r_defs.h r_state.h r_sky.h lprintf.h
+r_draw.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+r_draw.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h i_system.h
+r_draw.o: d_ticcmd.h tables.h info.h d_think.h p_mobj.h w_wad.h r_main.h
+r_draw.o: r_data.h r_defs.h r_state.h v_video.h st_stuff.h d_event.h g_game.h
+r_draw.o: am_map.h
+r_main.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+r_main.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h i_system.h
+r_main.o: d_ticcmd.h tables.h info.h d_think.h p_mobj.h w_wad.h r_main.h
+r_main.o: r_data.h r_defs.h r_state.h r_things.h r_plane.h r_bsp.h r_draw.h
+r_main.o: m_bbox.h r_sky.h v_video.h lprintf.h st_stuff.h d_event.h
+r_plane.o: z_zone.h doomstat.h doomdata.h doomtype.h d_net.h d_player.h
+r_plane.o: d_items.h doomdef.h m_swap.h version.h p_pspr.h m_fixed.h
+r_plane.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h w_wad.h
+r_plane.o: r_main.h r_data.h r_defs.h r_state.h r_draw.h r_things.h r_sky.h
+r_plane.o: r_plane.h
+r_segs.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+r_segs.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h i_system.h
+r_segs.o: d_ticcmd.h tables.h info.h d_think.h p_mobj.h r_main.h r_data.h
+r_segs.o: r_defs.h r_state.h r_bsp.h r_plane.h r_things.h r_draw.h w_wad.h
+r_sky.o: r_sky.h m_fixed.h i_system.h d_ticcmd.h doomtype.h
+r_things.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+r_things.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+r_things.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h w_wad.h
+r_things.o: r_main.h r_data.h r_defs.h r_state.h r_bsp.h r_segs.h r_draw.h
+r_things.o: r_things.h
+s_sound.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+s_sound.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+s_sound.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h s_sound.h
+s_sound.o: i_sound.h sounds.h r_main.h r_data.h r_defs.h r_state.h m_random.h
+s_sound.o: w_wad.h lprintf.h
+sounds.o: doomtype.h sounds.h
+st_lib.o: doomdef.h z_zone.h m_swap.h version.h doomstat.h doomdata.h
+st_lib.o: doomtype.h d_net.h d_player.h d_items.h p_pspr.h m_fixed.h
+st_lib.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h v_video.h
+st_lib.o: r_data.h r_defs.h r_state.h w_wad.h st_stuff.h d_event.h st_lib.h
+st_lib.o: r_main.h
+st_stuff.o: doomdef.h z_zone.h m_swap.h version.h doomstat.h doomdata.h
+st_stuff.o: doomtype.h d_net.h d_player.h d_items.h p_pspr.h m_fixed.h
+st_stuff.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h
+st_stuff.o: m_random.h i_video.h w_wad.h st_stuff.h d_event.h st_lib.h
+st_stuff.o: r_defs.h v_video.h r_data.h r_state.h r_main.h am_map.h m_cheat.h
+st_stuff.o: s_sound.h sounds.h dstrings.h d_englsh.h r_draw.h
+tables.o: w_wad.h tables.h m_fixed.h i_system.h d_ticcmd.h doomtype.h
+tables.o: m_swap.h lprintf.h
+v_video.o: doomdef.h z_zone.h m_swap.h version.h r_main.h d_player.h
+v_video.o: d_items.h p_pspr.h m_fixed.h i_system.h d_ticcmd.h doomtype.h
+v_video.o: tables.h info.h d_think.h p_mobj.h doomdata.h r_data.h r_defs.h
+v_video.o: r_state.h m_bbox.h w_wad.h v_video.h i_video.h
+version.o: version.h z_zone.h
+w_wad.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+w_wad.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h i_system.h
+w_wad.o: d_ticcmd.h tables.h info.h d_think.h p_mobj.h w_wad.h lprintf.h
+wi_stuff.o: doomstat.h doomdata.h doomtype.h d_net.h d_player.h d_items.h
+wi_stuff.o: doomdef.h z_zone.h m_swap.h version.h p_pspr.h m_fixed.h
+wi_stuff.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h
+wi_stuff.o: m_random.h w_wad.h g_game.h d_event.h r_main.h r_data.h r_defs.h
+wi_stuff.o: r_state.h v_video.h wi_stuff.h s_sound.h sounds.h lprintf.h
+wi_stuff.o: r_draw.h
+z_bmalloc.o: doomtype.h z_zone.h z_bmalloc.h i_system.h d_ticcmd.h
+z_zone.o: z_zone.h doomstat.h doomdata.h doomtype.h d_net.h d_player.h
+z_zone.o: d_items.h doomdef.h m_swap.h version.h p_pspr.h m_fixed.h
+z_zone.o: i_system.h d_ticcmd.h tables.h info.h d_think.h p_mobj.h m_argv.h
