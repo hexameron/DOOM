@@ -80,11 +80,11 @@ s%@INSTALL_SCRIPT@%${INSTALL_PROGRAM}%g
 s%@INSTALL_DATA@%${INSTALL} -m 644%g
 s%@PACKAGE@%lxdoom%g
 s%@VERSION@%1.4.1%g
-s%@ACLOCAL@%/root/lxdoom-1.4.1/missing aclocal%g
-s%@AUTOCONF@%/root/lxdoom-1.4.1/missing autoconf%g
-s%@AUTOMAKE@%/root/lxdoom-1.4.1/missing automake%g
-s%@AUTOHEADER@%/root/lxdoom-1.4.1/missing autoheader%g
-s%@MAKEINFO@%/root/lxdoom-1.4.1/missing makeinfo%g
+s%@ACLOCAL@%./missing aclocal%g
+s%@AUTOCONF@%./missing autoconf%g
+s%@AUTOMAKE@%./missing automake%g
+s%@AUTOHEADER@%./missing autoheader%g
+s%@MAKEINFO@%./missing makeinfo%g
 s%@SET_MAKE@%%g
 s%@CC@%gcc%g
 s%@CPP@%gcc -E%g

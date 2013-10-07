@@ -49,10 +49,10 @@ pkgincludedir = $(includedir)/lxdoom
 
 top_builddir = ..
 
-ACLOCAL = ../missing aclocal
-AUTOCONF = ../missing autoconf
-AUTOMAKE = ../missing automake
-AUTOHEADER = ../missing autoheader
+ACLOCAL = ./missing aclocal
+AUTOCONF = ./missing autoconf
+AUTOMAKE = ./missing automake
+AUTOHEADER = ./missing autoheader
 
 INSTALL = /usr/bin/install -c
 INSTALL_PROGRAM = ${INSTALL} $(AM_INSTALL_PROGRAM_FLAGS)
@@ -79,7 +79,7 @@ BUILD_SNDSERV = sndserv
 CC = gcc
 LIB_XDGA = 
 LIB_XEXT = -lXext
-MAKEINFO = ../missing makeinfo
+MAKEINFO = ./missing makeinfo
 MIXER_CFLAGS = 
 MIXER_LIBS = 
 PACKAGE = lxdoom
@@ -97,7 +97,7 @@ ASMS =
 #SYS_CFLAGS = -m486 -fomit-frame-pointer
 SYS_CFLAGS = 
 
-CFLAGS =  -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT  -Ofast $(SYS_CFLAGS)
+CFLAGS =  -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT  -Ofast $(SYS_CFLAGS) 
 
 sndserv_SOURCES = version.c l_soundsrv.c sounds.c l_soundgen.c l_soundsrv.h l_soundgen.h
 sndserv_LDADD = 
