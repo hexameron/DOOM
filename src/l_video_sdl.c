@@ -410,26 +410,15 @@ void I_PreInitGraphics(void)
 
 void I_SetRes(unsigned int width, unsigned int height)
 {
-  SCREENWIDTH = 400;
+  // Open Linux framebuffer size and use native resolution
+  I_InitGraphics();
 
-  SCREENHEIGHT = 480;
-
-#ifdef I386
-  if (SCREENWIDTH == 320) {
-    R_DrawColumn = R_DrawColumn_Normal;
-    R_DrawTLColumn = R_DrawTLColumn_Normal;
-  } else {
-    R_DrawColumn = R_DrawColumn_HighRes;
-    R_DrawTLColumn = R_DrawTLColumn_HighRes;
-  }
-#endif
-  printf("I_SetRes: Using resolution %dx%d\n", SCREENWIDTH, SCREENHEIGHT);
+  printf("Using 3d side-by-side Framebuffer: 2x%dx%d\n", SCREENWIDTH, SCREENHEIGHT);
 }
 
 void I_InitGraphics(void)
 {
   const int depth_list[] = { 0, 8 };
-  int           w, h;
   int		n;
   Uint32        init_flags;
   
@@ -441,11 +430,8 @@ void I_InitGraphics(void)
     }
     firsttime = 0;
   }
-
-  w = SCREENWIDTH ;
-  h = SCREENHEIGHT ;
   
-  // Initialize SDL with this graphics mode
+  // Initialize SDL with native graphics mode
   if ( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
     I_Error("Could not initialize SDL [%s]", SDL_GetError());
   }
@@ -455,7 +441,7 @@ void I_InitGraphics(void)
     init_flags |= SDL_FULLSCREEN;
   }
   for ( n=0; n<(sizeof(depth_list)/sizeof(depth_list[0])); ++n ) {
-    screen = SDL_SetVideoMode(w*2, h, depth_list[n], init_flags);
+    screen = SDL_SetVideoMode(0, 0, depth_list[n], init_flags);
     if ( screen ) {
       dest_bpp = screen->format->BitsPerPixel;
       if (I_QueryImageTranslation())
@@ -465,8 +451,10 @@ void I_InitGraphics(void)
     }
   }
   if ( screen == NULL ) {
-    I_Error("Couldn't set %dx%d video mode [%s]", w, h, SDL_GetError());
+    I_Error("Couldn't set native video mode [%s]", SDL_GetError());
   }
+  SCREENWIDTH = screen->w >> 1;
+  SCREENHEIGHT = screen->h;
   SDL_WM_SetCaption(lcase_lxdoom, ucase_lxdoom);
 
   I_InitImageTranslation();
