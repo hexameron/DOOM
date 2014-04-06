@@ -33,6 +33,7 @@
 #ifndef __SOUNDS__
 #define __SOUNDS__
 
+#include "SDL/SDL_mixer.h"
 //
 // SoundFX struct.
 //
@@ -63,6 +64,7 @@ struct sfxinfo_struct {
 
   // sound data
   void *data;
+  Mix_Chunk *chunk;
 
   // this is checked every second to see if sound
   // can be thrown out (if 0, then decrement, if -1,

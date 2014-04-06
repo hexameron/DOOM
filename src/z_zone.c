@@ -74,7 +74,7 @@ static const char rcsid[] = "$Id: z_zone.c,v 1.9 1999/10/12 13:01:15 cphipps Exp
 #define LEAVE_ASIDE (128*1024)
 
 // Minimum RAM machine is assumed to have
-#define MIN_RAM (4*1024*1024)
+#define MIN_RAM (16*1024*1024)
 
 // Amount to subtract when retrying failed attempts to allocate initial pool
 #define RETRY_AMOUNT (256*1024)
@@ -197,11 +197,8 @@ static void Z_Close(void)
 
 void Z_Init(void)
 {
-#ifdef DJGPP
-  size_t size = _go32_dpmi_remaining_physical_memory();    // Get free RAM
-#else
   // CPhipps - allow -heapsize or -heapkb parameters
-  size_t size = (MIN_RAM*3)/2; // CPhipps - 6 Mb is enough for 
+  size_t size = MIN_RAM; // CPhipps - 6 Mb is enough for 
   // the original Doom ][ levels at high-res, if people want to run 
   // something massive like SIMPEVIL they'll need more
   {
@@ -216,7 +213,6 @@ void Z_Init(void)
 	size = atol(myargv[p]) << 10; 
       }
   }
-#endif
   if (size < MIN_RAM)         // If less than MIN_RAM, assume MIN_RAM anyway
     size = MIN_RAM;
 

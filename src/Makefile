@@ -85,7 +85,7 @@ MIXER_LIBS =
 PACKAGE = lxdoom
 SDL_CFLAGS = -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT
 SDL_CONFIG = /usr/bin/sdl-config
-SDL_LIBS = -L/usr/lib/arm-linux-gnueabihf -lSDL
+SDL_LIBS = -L/usr/lib/arm-linux-gnueabihf -lSDL -lSDL_mixer
 VERSION = 1.4.1
 
 gamesdir = $(prefix)/games
@@ -97,7 +97,7 @@ ASMS =
 #SYS_CFLAGS = -m486 -fomit-frame-pointer
 SYS_CFLAGS = 
 
-CFLAGS =  -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT  -Ofast $(SYS_CFLAGS) 
+CFLAGS =  -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT  -O2 -ffast-math $(SYS_CFLAGS) 
 
 sndserv_SOURCES = version.c l_soundsrv.c sounds.c l_soundgen.c l_soundsrv.h l_soundgen.h
 sndserv_LDADD = 
@@ -114,7 +114,7 @@ lsdldoom_SOURCES = l_video_trans.h l_video_trans.c l_video_sdl.c l_sound_sdl.c q
 
 lxdoom_LDADD =   -lX11  -lXext 
 lsdoom_LDADD = -lvga
-lsdldoom_LDADD = -lSDL -lpthread 
+lsdldoom_LDADD = -lSDL -lSDL_mixer -lpthread 
 
 EXTRA_lxdoom_SOURCES = $(ASMS)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
