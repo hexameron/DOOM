@@ -51,20 +51,9 @@ rcsid[] = "$Id: i_unix.c,v 1.5 1997/02/03 22:45:10 b1 Exp $";
 /* Define this if you want to use the MIDI music support */
 #define HAVE_MIXER
 
-// The number of internal mixing channels,
-//  the samples calculated for each mixing step,
-//  the size of the 16bit, 2 hardware channel (stereo)
-//  mixing buffer, and the samplerate of the raw data.
-
-// Variables used by Boom from Allegro
-// created here to avoid changes to core Boom files
-int snd_card = 1;
-int mus_card = 1;
-int detect_voices = 0; // God knows
-
 // Increase samplecount with samplerate
 #define SAMPLECOUNT 1024
-#define NUM_CHANNELS 12
+#define NUM_CHANNELS 8
 
 // 22050 stereo or 44100 mono
 #define SAMPLERATE 22050		
@@ -72,41 +61,10 @@ int detect_voices = 0; // God knows
 // The actual lengths of all sound effects.
 int 		lengths[NUMSFX];
 
-// The actual output device.
-int	audio_fd;
-
-
-// The channel step amount...
-unsigned int	channelstep[NUM_CHANNELS];
-// ... and a 0.16 bit remainder of last step.
-unsigned int	channelstepremainder[NUM_CHANNELS];
-
-
-// The channel data pointers, start and end.
-unsigned char*	channels[NUM_CHANNELS];
-unsigned char*	channelsend[NUM_CHANNELS];
-
-
-// Time/gametic that the channel started playing,
-//  used to determine oldest, which automatically
-//  has lowest priority.
-// In case number of active sounds exceeds
-//  available channels.
-int		channelstart[NUM_CHANNELS];
-
-// The sound in channel handles,
-//  determined on registration,
-//  might be used to unregister/stop/modify,
-//  currently unused.
-int 		channelhandles[NUM_CHANNELS];
-
-// SFX id of the playing sound effect.
-// Used to catch duplicates (like chainsaw).
-int		channelids[NUM_CHANNELS];			
-
-// Pitch to stepping lookup, unused.
-int		steptable[256];
-
+//external
+int snd_card = 1;
+int mus_card = 1;
+int detect_voices = 0;
 
 //
 // This function loads the sound data from the WAD lump,
@@ -153,7 +111,7 @@ void* getsfx( const char* sfxname, int* len )
     sfx = (unsigned char*)W_CacheLumpNum(sfxlump);
 
     // upsample to 16 bit x 44.1Khz (playback is 22khz stereo)
-    paddedsize = (size  * 8) + (SAMPLECOUNT * 8);
+    paddedsize = (size  * 8) + (SAMPLECOUNT * 4);
 
     // Allocate from zone memory.
     paddedsfx = (unsigned char*)Z_Malloc( paddedsize+8, PU_STATIC, 0 );
@@ -164,9 +122,9 @@ void* getsfx( const char* sfxname, int* len )
     srcfx = sfx + 8;
     for (i = 9; i < size; i++)
     {
-      s = (int16_t)(*srcfx - 127) << 6;
+      s = (int16_t)(*srcfx - 128) * 63;
       srcfx++;
-      t = (int16_t)(*srcfx - 127) << 6;
+      t = (int16_t)(*srcfx - 128) * 63;
       *upsamps++ = s << 2;
       *upsamps++ = s << 2;
       *upsamps++ = s * 3 + t;
@@ -178,7 +136,7 @@ void* getsfx( const char* sfxname, int* len )
     *upsamps++ = t;
 
     // Pad with zeros to end of sampleblock
-    for (i = 1; i < (SAMPLECOUNT*4); i++) *upsamps++ = 0;
+    for (i = 1; i < (SAMPLECOUNT*2); i++) *upsamps++ = 0;
 
     // Remove the cached lump.
     Z_Free( sfx );
@@ -199,7 +157,7 @@ void* getsfx( const char* sfxname, int* len )
 //
 int addsfx( int sfxid, int volume, int step, int seperation )
 {
-    static unsigned short	handlenum = 2;
+    static unsigned short	handlenum = 3;
  
     int		i;
     int		rc;
@@ -209,29 +167,40 @@ int addsfx( int sfxid, int volume, int step, int seperation )
 
     slot = -1;
 
+    /* Stopping samples in mid-stream is bad.
+     * needed for chainsaw/chaingun
+     * Let everything else run to end */
     // Chainsaw troubles.
     // Play these sound effects only one at a time.
     if ( sfxid == sfx_sawup
 	|| sfxid == sfx_sawidl
 	|| sfxid == sfx_sawful
-	|| sfxid == sfx_sawhit ){
+	|| sfxid == sfx_sawhit )
 	  slot = 0;
-	}
-    if ( sfxid == sfx_stnmov
-	|| sfxid == sfx_pistol ){
+    if ( sfxid == sfx_stnmov )
 	  slot = 1;
-	}
+    if ( sfxid == sfx_pistol )
+          slot = 2;	
     if (slot = -1) {
-	slot = handlenum++;
-	if (handlenum >= NUM_CHANNELS) handlenum = 2;
+	for (i = 4; i < NUM_CHANNELS; i++)
+	{
+		handlenum++;
+		if (handlenum >= NUM_CHANNELS) handlenum = 3;
+		if (!Mix_Playing(handlenum)){
+			slot = handlenum;
+			break;
+		}
+	}
+    } else {
+        Mix_HaltChannel(slot);
     }
+    if (-1 == slot) return 99;
 
     seperation -= 1; // 0-FF
     left = (uint8_t)(((0xffff - seperation * seperation) * volume)>>12);
     seperation = 0xff - seperation;
     right = (uint8_t)(((0xffff - seperation * seperation) * volume)>>12);
 
-    Mix_HaltChannel(slot);
     Mix_SetPanning(slot, left, right);
     Mix_PlayChannel(slot, S_sfx[sfxid].chunk, 0);
 
@@ -290,165 +259,28 @@ I_StartSound
   int		pitch,
   int		priority )
 {
-
-  // UNUSED
-  priority = 0;
-  
-    // Debug.
-    //fprintf( stderr, "starting sound %d", id );
-    
-    // Returns a handle (not used).
-    id = addsfx( id, vol, steptable[pitch], sep );
-
-    // fprintf( stderr, "/handle is %d\n", id );
-    
-    return id;
+    return addsfx( id, vol, pitch, sep );
 }
-
-
 
 void I_StopSound (int handle)
 {
-  // You need the handle returned by StartSound.
-  // Would be looping all channels,
-  //  tracking down the handle,
-  //  an setting the channel to zero.
-  
-  // UNUSED.
-  handle = 0;
+    if (99 == handle) return;
+    //Mix_HaltChannel(handle);
 }
 
 
 boolean I_SoundIsPlaying(int handle)
 {
-    // Ouch.
-    return (handle < 0);
+    if (99 == handle) return false;
+    return 0 < Mix_Playing(handle) ;
 }
 
-// Using SDL_Mixer, so no callback
-#if 0
-//
-// This function loops all active (internal) sound
-//  channels, retrieves a given number of samples
-//  from the raw sound data, modifies it according
-//  to the current (internal) channel parameters,
-//  mixes the per channel samples into the given
-//  mixing buffer, and clamping it to the allowed
-//  range.
-//
-// This function currently supports only 16bit.
-//
-void I_UpdateSound(void *unused, Uint8 *stream, int len)
-{
-  // Mix current sound data.
-  // Data, from raw sound, for right and left.
-  register unsigned int	sample;
-  register int		dl;
-  register int		dr;
-  
-  // Pointers in audio stream, left, right, end.
-  signed short*		leftout;
-  signed short*		rightout;
-  signed short*		leftend;
-  // Step in stream, left and right, thus two.
-  int				step;
-
-  // Mixing channel index.
-  int				chan;
-    
-
-    // Left and right channel
-    //  are in audio stream, alternating.
-    leftout = (signed short *)stream;
-    rightout = ((signed short *)stream)+1;
-    step = 2;
-
-    // Determine end, for left channel only
-    //  (right channel is implicit).
-    leftend = leftout + SAMPLECOUNT*step;
-
-    // Mix sounds into the mixing buffer.
-    // Loop over step*SAMPLECOUNT,
-    //  that is 512 values for two channels.
-    while (leftout != leftend)
-    {
-	// Reset left/right value. 
-	//dl = 0;
-	//dr = 0;
-	dl = *leftout;
-	dr = *rightout;
-
-	// Love thy L2 chache - made this a loop.
-	// Now more channels could be set at compile time
-	//  as well. Thus loop those  channels.
-	for ( chan = 0; chan < NUM_CHANNELS; chan++ )
-	{
-	    // Check channel, if active.
-	    if (channels[ chan ])
-	    {
-		// Get the raw data from the channel. 
-		sample = *channels[ chan ];
-		// Add left and right part
-		//  for this channel (sound)
-		//  to the current data.
-		// Adjust volume accordingly.
-		dl += channelleftvol_lookup[ chan ][sample];
-		dr += channelrightvol_lookup[ chan ][sample];
-		// Increment index ???
-		channelstepremainder[ chan ] += channelstep[ chan ];
-		// MSB is next sample???
-		channels[ chan ] += channelstepremainder[ chan ] >> 16;
-		// Limit to LSB???
-		channelstepremainder[ chan ] &= 65536-1;
-
-		// Check whether we are done.
-		if (channels[ chan ] >= channelsend[ chan ])
-		    channels[ chan ] = 0;
-	    }
-	}
-	
-	// Clamp to range. Left hardware channel.
-	// Has been char instead of short.
-	// if (dl > 127) *leftout = 127;
-	// else if (dl < -128) *leftout = -128;
-	// else *leftout = dl;
-
-	if (dl > 0x7fff)
-	    *leftout = 0x7fff;
-	else if (dl < -0x8000)
-	    *leftout = -0x8000;
-	else
-	    *leftout = dl;
-
-	// Same for right hardware channel.
-	if (dr > 0x7fff)
-	    *rightout = 0x7fff;
-	else if (dr < -0x8000)
-	    *rightout = -0x8000;
-	else
-	    *rightout = dr;
-
-	// Increment current pointers in stream
-	leftout += step;
-	rightout += step;
-    }
-}
-#endif
-// No callback
-
-
-void
-I_UpdateSoundParams
-( int	handle,
-  int	vol,
-  int	sep,
-  int	pitch)
+void I_UpdateSoundParams(int handle, int vol, int sep, int pitch)
 {
   // Should update position over time
   // UNUSED.
   handle = vol = sep = pitch = 0;
 }
-
 
 void I_ShutdownSound(void)
 {
@@ -460,19 +292,16 @@ void I_ShutdownSound(void)
   SDL_CloseAudio();
 }
 
-static SDL_AudioSpec audio;
 
-void
-I_InitSound()
+void I_InitSound()
 { 
   int i;
   
-  // Secure and configure sound device first.
   fprintf( stderr, "I_InitSound: ");
   SDL_Init(SDL_INIT_AUDIO);
   I_InitMusic();
   Mix_AllocateChannels(NUM_CHANNELS);
-  Mix_ReserveChannels(2);
+  Mix_ReserveChannels(3);
 
   // Initialize external data (all sounds) at start, keep static.
  
@@ -502,9 +331,6 @@ I_InitSound()
   fprintf(stderr, "I_InitSound: sound module ready\n");
   SDL_PauseAudio(0);
 }
-
-
-
 
 //
 // MUSIC API.
