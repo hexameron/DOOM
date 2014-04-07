@@ -6,12 +6,6 @@ dnl --- Check for system type
 AC_CANONICAL_SYSTEM
 
 case "$target" in
-i?86-*) AC_DEFINE(I386) is_i386=yes ;;
-esac
-
-AM_CONDITIONAL(I386_ASM, test "$is_i386" = yes)
-
-case "$target" in
 *-linux) AC_DEFINE(LINUX) ;;
 *-linux-*) AC_DEFINE(LINUX) ;;
 *-freebsd) AC_DEFINE(FREEBSD) ;;
@@ -38,18 +32,10 @@ fi
 dnl --- Libraries
 dnl AC_PATH_X
 AC_PATH_XTRA
-CFLAGS="$CFLAGS -I$x_includes"
-LIBS="$LIBS $X_LIBS $X_EXTRA_LIBS"
 AC_CHECK_LIB(m,sqrt)
-AC_CHECK_LIB(Xext,XShmCreateImage,AC_DEFINE(HAVE_LIBXEXT) LIB_XEXT=-lXext,LIB_XEXT=,-lXext -lX11)
-dnl --- CPhipps - disable XFree86 DGA support for release
-dnl AC_CHECK_LIB(Xxf86dga,XF86DGADirectVideo,AC_DEFINE(HAVE_LIBXXF86DGA) LIB_XDGA=-lXxf86dga,LIB_XDGA=,-lXxf86dga -lXext -lX11)
-AC_CHECK_LIB(vga,vga_setpalvec,BUILD_LSDOOM=lsdoom,BUILD_LSDOOM=)
 AM_PATH_SDL(1.0.1, BUILD_SDLDOOM=lsdldoom, BUILD_SDLDOOM=)
-AC_CHECK_LIB(mixer,open_music,[
-    MIXER_CFLAGS=-DHAVE_MIXER
-    MIXER_LIBS=-lmixer
-],)
+MIXER_LIBS=-lSDL_mixer
+
 
 dnl --- Library functions
 AC_CHECK_FUNC(stricmp,,AC_DEFINE(stricmp,strcasecmp)) 
@@ -79,22 +65,11 @@ AC_DEFINE(TIMEDIAG))
 AC_ARG_ENABLE(heapcheck,[  --enable-heapcheck	  turns on continuous heap checking (very slow)],AC_DEFINE(CHECKHEAP))
 
 
-dnl --- Decide what programs to build
-if test "$no_x" != yes
-then BUILD_LXDOOM=lxdoom
-else
-BUILD_LXDOOM=
-fi
 
-AC_SUBST(BUILD_SNDSERV)
-AC_SUBST(BUILD_LXDOOM)
-AC_SUBST(BUILD_LSDOOM)
 AC_SUBST(BUILD_SDLDOOM)
 AC_SUBST(SDL_CFLAGS)
 AC_SUBST(MIXER_CFLAGS)
 AC_SUBST(MIXER_LIBS)
-AC_SUBST(LIB_XEXT)
-AC_SUBST(LIB_XDGA)
 
 dnl --- Pass install dirs to C pre-processor
 dnl --- YUCK! but I can't see a better way to do this
