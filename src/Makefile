@@ -1,4 +1,3 @@
-# Generated automatically from Makefile.in by configure.
 # Makefile.in generated automatically by automake 1.4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
@@ -21,10 +20,11 @@
 #
 
 
-SHELL = /bin/sh
+SHELL = /bin/bash
 
 srcdir = .
 top_srcdir = ..
+
 prefix = /usr/local
 exec_prefix = /usr/local
 
@@ -36,8 +36,8 @@ sysconfdir = ${prefix}/etc
 sharedstatedir = ${prefix}/com
 localstatedir = ${prefix}/var
 libdir = ${exec_prefix}/lib
-infodir = ${prefix}/info
-mandir = ${prefix}/man
+infodir = ${prefix}/share/info
+mandir = ${prefix}/share/man
 includedir = ${prefix}/include
 oldincludedir = /usr/include
 
@@ -49,15 +49,15 @@ pkgincludedir = $(includedir)/lxdoom
 
 top_builddir = ..
 
-ACLOCAL = ./missing aclocal
-AUTOCONF = ./missing autoconf
-AUTOMAKE = ./missing automake
-AUTOHEADER = ./missing autoheader
+ACLOCAL = aclocal-1.11
+AUTOCONF = autoconf
+AUTOMAKE = automake-1.11
+AUTOHEADER = autoheader
 
 INSTALL = /usr/bin/install -c
 INSTALL_PROGRAM = ${INSTALL} $(AM_INSTALL_PROGRAM_FLAGS)
 INSTALL_DATA = ${INSTALL} -m 644
-INSTALL_SCRIPT = ${INSTALL_PROGRAM}
+INSTALL_SCRIPT = ${INSTALL}
 transform = s,x,x,
 
 NORMAL_INSTALL = :
@@ -66,38 +66,38 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_alias = arm-unknown-linux-gnu
+build_alias = 
 build_triplet = arm-unknown-linux-gnu
-host_alias = arm-unknown-linux-gnu
+host_alias = 
 host_triplet = arm-unknown-linux-gnu
-target_alias = arm-unknown-linux-gnu
+target_alias = 
 target_triplet = arm-unknown-linux-gnu
-BUILD_LSDOOM = 
-BUILD_LXDOOM = 
+BUILD_LSDOOM = @BUILD_LSDOOM@
+BUILD_LXDOOM = @BUILD_LXDOOM@
 BUILD_SDLDOOM = lsdldoom
-BUILD_SNDSERV = sndserv
+BUILD_SNDSERV = @BUILD_SNDSERV@
 CC = gcc
-LIB_XDGA = 
-LIB_XEXT = -lXext
-MAKEINFO = ./missing makeinfo
+LIB_XDGA = @LIB_XDGA@
+LIB_XEXT = @LIB_XEXT@
+MAKEINFO = makeinfo
 MIXER_CFLAGS = 
-MIXER_LIBS = 
+MIXER_LIBS = -lSDL_mixer
 PACKAGE = lxdoom
 SDL_CFLAGS = -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT
 SDL_CONFIG = /usr/bin/sdl-config
-SDL_LIBS = -L/usr/lib/arm-linux-gnueabihf -lSDL -lSDL_mixer
+SDL_LIBS = -L/usr/lib/arm-linux-gnueabihf -lSDL
 VERSION = 1.4.1
 
 gamesdir = $(prefix)/games
 EXTRA_PROGRAMS = lsdldoom lsdoom lxdoom sndserv
-games_PROGRAMS = lsdldoom   sndserv lxdoom-game-server
+games_PROGRAMS = lsdldoom @BUILD_LSDOOM@ @BUILD_LXDOOM@ @BUILD_SNDSERV@ lxdoom-game-server
 EXTRA_DIST = makefile.pre-ac
-#ASMS = drawspan.s drawcol.s
-ASMS = 
-#SYS_CFLAGS = -m486 -fomit-frame-pointer
-SYS_CFLAGS = 
+@I386_ASM_TRUE@ASMS = drawspan.s drawcol.s
+@I386_ASM_FALSE@ASMS = 
+@I386_ASM_TRUE@SYS_CFLAGS = -m486 -fomit-frame-pointer
+@I386_ASM_FALSE@SYS_CFLAGS = 
 
-CFLAGS =  -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT  -O2 -ffast-math $(SYS_CFLAGS) 
+CFLAGS =  -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT  -g -O2 -ffast-math $(SYS_CFLAGS) -Wall -Winline -Wcast-align -Wwrite-strings
 
 sndserv_SOURCES = version.c l_soundsrv.c sounds.c l_soundgen.c l_soundsrv.h l_soundgen.h
 sndserv_LDADD = 
@@ -112,9 +112,9 @@ lxdoom_SOURCES = l_video_trans.h   l_video_trans.c  l_video_x.c l_sound.c $(COMM
 lsdoom_SOURCES = l_video_svgalib.c l_sound.c $(COMMON_SRC)
 lsdldoom_SOURCES = l_video_trans.h l_video_trans.c l_video_sdl.c l_sound_sdl.c qmus2mid.c qmus2mid.h $(COMMON_SRC)
 
-lxdoom_LDADD =   -lX11  -lXext 
+lxdoom_LDADD =   -lX11  @LIB_XEXT@ @LIB_XDGA@
 lsdoom_LDADD = -lvga
-lsdldoom_LDADD = -lSDL -lSDL_mixer -lpthread 
+lsdldoom_LDADD = -lSDL -lpthread -lSDL_mixer
 
 EXTRA_lxdoom_SOURCES = $(ASMS)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -123,102 +123,102 @@ CONFIG_CLEAN_FILES =
 PROGRAMS =  $(games_PROGRAMS)
 
 
-DEFS = -DHAVE_CONFIG_H -I$(srcdir)
+DEFS = -DHAVE_CONFIG_H -I. -I$(srcdir) -I..
 CPPFLAGS = 
 LDFLAGS = 
-LIBS = -lm   
+LIBS = -lm 
 X_CFLAGS = 
 X_LIBS = 
 X_EXTRA_LIBS = 
 X_PRE_LIBS = 
-#lsdldoom_OBJECTS =  l_video_trans.o l_video_sdl.o \
-#l_sound_sdl.o qmus2mid.o am_map.o g_game.o p_mobj.o \
-#r_segs.o hu_lib.o lprintf.o d_client.o p_plats.o r_sky.o \
-#d_deh.o hu_stuff.o m_argv.o p_pspr.o m_bbox.o p_saveg.o \
-#r_things.o d_items.o m_cheat.o p_setup.o s_sound.o \
-#d_main.o p_sight.o sounds.o m_menu.o p_spec.o info.o \
-#st_lib.o m_misc.o p_switch.o l_joy.o p_telept.o \
-#st_stuff.o m_random.o p_tick.o l_main.o tables.o \
-#p_user.o l_system.o p_ceilng.o v_video.o doomdef.o \
-#p_doors.o p_enemy.o r_bsp.o version.o doomstat.o \
-#p_floor.o r_data.o w_wad.o p_genlin.o dstrings.o l_udp.o \
-#p_inter.o wi_stuff.o r_draw.o f_finale.o p_lights.o \
-#z_bmalloc.o p_map.o r_main.o f_wipe.o z_zone.o \
-#p_maputl.o r_plane.o drawspan.o drawcol.o
-lsdldoom_OBJECTS =  l_video_trans.o l_video_sdl.o \
-l_sound_sdl.o qmus2mid.o am_map.o g_game.o p_mobj.o \
-r_segs.o hu_lib.o lprintf.o d_client.o p_plats.o \
-r_sky.o d_deh.o hu_stuff.o m_argv.o p_pspr.o m_bbox.o \
-p_saveg.o r_things.o d_items.o m_cheat.o p_setup.o \
-s_sound.o d_main.o p_sight.o sounds.o m_menu.o p_spec.o \
-info.o st_lib.o m_misc.o p_switch.o l_joy.o p_telept.o \
-st_stuff.o m_random.o p_tick.o l_main.o tables.o \
-p_user.o l_system.o p_ceilng.o v_video.o doomdef.o \
-p_doors.o p_enemy.o r_bsp.o version.o doomstat.o \
-p_floor.o r_data.o w_wad.o p_genlin.o dstrings.o \
-l_udp.o p_inter.o wi_stuff.o r_draw.o f_finale.o \
-p_lights.o z_bmalloc.o p_map.o r_main.o f_wipe.o \
-z_zone.o p_maputl.o r_plane.o
+@I386_ASM_TRUE@lsdldoom_OBJECTS =  l_video_trans.o l_video_sdl.o \
+@I386_ASM_TRUE@l_sound_sdl.o qmus2mid.o am_map.o g_game.o p_mobj.o \
+@I386_ASM_TRUE@r_segs.o hu_lib.o lprintf.o d_client.o p_plats.o r_sky.o \
+@I386_ASM_TRUE@d_deh.o hu_stuff.o m_argv.o p_pspr.o m_bbox.o p_saveg.o \
+@I386_ASM_TRUE@r_things.o d_items.o m_cheat.o p_setup.o s_sound.o \
+@I386_ASM_TRUE@d_main.o p_sight.o sounds.o m_menu.o p_spec.o info.o \
+@I386_ASM_TRUE@st_lib.o m_misc.o p_switch.o l_joy.o p_telept.o \
+@I386_ASM_TRUE@st_stuff.o m_random.o p_tick.o l_main.o tables.o \
+@I386_ASM_TRUE@p_user.o l_system.o p_ceilng.o v_video.o doomdef.o \
+@I386_ASM_TRUE@p_doors.o p_enemy.o r_bsp.o version.o doomstat.o \
+@I386_ASM_TRUE@p_floor.o r_data.o w_wad.o p_genlin.o dstrings.o l_udp.o \
+@I386_ASM_TRUE@p_inter.o wi_stuff.o r_draw.o f_finale.o p_lights.o \
+@I386_ASM_TRUE@z_bmalloc.o p_map.o r_main.o f_wipe.o z_zone.o \
+@I386_ASM_TRUE@p_maputl.o r_plane.o drawspan.o drawcol.o
+@I386_ASM_FALSE@lsdldoom_OBJECTS =  l_video_trans.o l_video_sdl.o \
+@I386_ASM_FALSE@l_sound_sdl.o qmus2mid.o am_map.o g_game.o p_mobj.o \
+@I386_ASM_FALSE@r_segs.o hu_lib.o lprintf.o d_client.o p_plats.o \
+@I386_ASM_FALSE@r_sky.o d_deh.o hu_stuff.o m_argv.o p_pspr.o m_bbox.o \
+@I386_ASM_FALSE@p_saveg.o r_things.o d_items.o m_cheat.o p_setup.o \
+@I386_ASM_FALSE@s_sound.o d_main.o p_sight.o sounds.o m_menu.o p_spec.o \
+@I386_ASM_FALSE@info.o st_lib.o m_misc.o p_switch.o l_joy.o p_telept.o \
+@I386_ASM_FALSE@st_stuff.o m_random.o p_tick.o l_main.o tables.o \
+@I386_ASM_FALSE@p_user.o l_system.o p_ceilng.o v_video.o doomdef.o \
+@I386_ASM_FALSE@p_doors.o p_enemy.o r_bsp.o version.o doomstat.o \
+@I386_ASM_FALSE@p_floor.o r_data.o w_wad.o p_genlin.o dstrings.o \
+@I386_ASM_FALSE@l_udp.o p_inter.o wi_stuff.o r_draw.o f_finale.o \
+@I386_ASM_FALSE@p_lights.o z_bmalloc.o p_map.o r_main.o f_wipe.o \
+@I386_ASM_FALSE@z_zone.o p_maputl.o r_plane.o
 lsdldoom_DEPENDENCIES = 
 lsdldoom_LDFLAGS = 
-#lsdoom_OBJECTS =  l_video_svgalib.o l_sound.o am_map.o \
-#g_game.o p_mobj.o r_segs.o hu_lib.o lprintf.o d_client.o \
-#p_plats.o r_sky.o d_deh.o hu_stuff.o m_argv.o p_pspr.o \
-#m_bbox.o p_saveg.o r_things.o d_items.o m_cheat.o \
-#p_setup.o s_sound.o d_main.o p_sight.o sounds.o m_menu.o \
-#p_spec.o info.o st_lib.o m_misc.o p_switch.o l_joy.o \
-#p_telept.o st_stuff.o m_random.o p_tick.o l_main.o \
-#tables.o p_user.o l_system.o p_ceilng.o v_video.o \
-#doomdef.o p_doors.o p_enemy.o r_bsp.o version.o \
-#doomstat.o p_floor.o r_data.o w_wad.o p_genlin.o \
-#dstrings.o l_udp.o p_inter.o wi_stuff.o r_draw.o \
-#f_finale.o p_lights.o z_bmalloc.o p_map.o r_main.o \
-#f_wipe.o z_zone.o p_maputl.o r_plane.o drawspan.o \
-#drawcol.o
-lsdoom_OBJECTS =  l_video_svgalib.o l_sound.o am_map.o \
-g_game.o p_mobj.o r_segs.o hu_lib.o lprintf.o \
-d_client.o p_plats.o r_sky.o d_deh.o hu_stuff.o \
-m_argv.o p_pspr.o m_bbox.o p_saveg.o r_things.o \
-d_items.o m_cheat.o p_setup.o s_sound.o d_main.o \
-p_sight.o sounds.o m_menu.o p_spec.o info.o st_lib.o \
-m_misc.o p_switch.o l_joy.o p_telept.o st_stuff.o \
-m_random.o p_tick.o l_main.o tables.o p_user.o \
-l_system.o p_ceilng.o v_video.o doomdef.o p_doors.o \
-p_enemy.o r_bsp.o version.o doomstat.o p_floor.o \
-r_data.o w_wad.o p_genlin.o dstrings.o l_udp.o \
-p_inter.o wi_stuff.o r_draw.o f_finale.o p_lights.o \
-z_bmalloc.o p_map.o r_main.o f_wipe.o z_zone.o \
-p_maputl.o r_plane.o
+@I386_ASM_TRUE@lsdoom_OBJECTS =  l_video_svgalib.o l_sound.o am_map.o \
+@I386_ASM_TRUE@g_game.o p_mobj.o r_segs.o hu_lib.o lprintf.o d_client.o \
+@I386_ASM_TRUE@p_plats.o r_sky.o d_deh.o hu_stuff.o m_argv.o p_pspr.o \
+@I386_ASM_TRUE@m_bbox.o p_saveg.o r_things.o d_items.o m_cheat.o \
+@I386_ASM_TRUE@p_setup.o s_sound.o d_main.o p_sight.o sounds.o m_menu.o \
+@I386_ASM_TRUE@p_spec.o info.o st_lib.o m_misc.o p_switch.o l_joy.o \
+@I386_ASM_TRUE@p_telept.o st_stuff.o m_random.o p_tick.o l_main.o \
+@I386_ASM_TRUE@tables.o p_user.o l_system.o p_ceilng.o v_video.o \
+@I386_ASM_TRUE@doomdef.o p_doors.o p_enemy.o r_bsp.o version.o \
+@I386_ASM_TRUE@doomstat.o p_floor.o r_data.o w_wad.o p_genlin.o \
+@I386_ASM_TRUE@dstrings.o l_udp.o p_inter.o wi_stuff.o r_draw.o \
+@I386_ASM_TRUE@f_finale.o p_lights.o z_bmalloc.o p_map.o r_main.o \
+@I386_ASM_TRUE@f_wipe.o z_zone.o p_maputl.o r_plane.o drawspan.o \
+@I386_ASM_TRUE@drawcol.o
+@I386_ASM_FALSE@lsdoom_OBJECTS =  l_video_svgalib.o l_sound.o am_map.o \
+@I386_ASM_FALSE@g_game.o p_mobj.o r_segs.o hu_lib.o lprintf.o \
+@I386_ASM_FALSE@d_client.o p_plats.o r_sky.o d_deh.o hu_stuff.o \
+@I386_ASM_FALSE@m_argv.o p_pspr.o m_bbox.o p_saveg.o r_things.o \
+@I386_ASM_FALSE@d_items.o m_cheat.o p_setup.o s_sound.o d_main.o \
+@I386_ASM_FALSE@p_sight.o sounds.o m_menu.o p_spec.o info.o st_lib.o \
+@I386_ASM_FALSE@m_misc.o p_switch.o l_joy.o p_telept.o st_stuff.o \
+@I386_ASM_FALSE@m_random.o p_tick.o l_main.o tables.o p_user.o \
+@I386_ASM_FALSE@l_system.o p_ceilng.o v_video.o doomdef.o p_doors.o \
+@I386_ASM_FALSE@p_enemy.o r_bsp.o version.o doomstat.o p_floor.o \
+@I386_ASM_FALSE@r_data.o w_wad.o p_genlin.o dstrings.o l_udp.o \
+@I386_ASM_FALSE@p_inter.o wi_stuff.o r_draw.o f_finale.o p_lights.o \
+@I386_ASM_FALSE@z_bmalloc.o p_map.o r_main.o f_wipe.o z_zone.o \
+@I386_ASM_FALSE@p_maputl.o r_plane.o
 lsdoom_DEPENDENCIES = 
 lsdoom_LDFLAGS = 
-#lxdoom_OBJECTS =  l_video_trans.o l_video_x.o l_sound.o \
-#am_map.o g_game.o p_mobj.o r_segs.o hu_lib.o lprintf.o \
-#d_client.o p_plats.o r_sky.o d_deh.o hu_stuff.o m_argv.o \
-#p_pspr.o m_bbox.o p_saveg.o r_things.o d_items.o \
-#m_cheat.o p_setup.o s_sound.o d_main.o p_sight.o \
-#sounds.o m_menu.o p_spec.o info.o st_lib.o m_misc.o \
-#p_switch.o l_joy.o p_telept.o st_stuff.o m_random.o \
-#p_tick.o l_main.o tables.o p_user.o l_system.o \
-#p_ceilng.o v_video.o doomdef.o p_doors.o p_enemy.o \
-#r_bsp.o version.o doomstat.o p_floor.o r_data.o w_wad.o \
-#p_genlin.o dstrings.o l_udp.o p_inter.o wi_stuff.o \
-#r_draw.o f_finale.o p_lights.o z_bmalloc.o p_map.o \
-#r_main.o f_wipe.o z_zone.o p_maputl.o r_plane.o \
-#drawspan.o drawcol.o
-lxdoom_OBJECTS =  l_video_trans.o l_video_x.o l_sound.o \
-am_map.o g_game.o p_mobj.o r_segs.o hu_lib.o lprintf.o \
-d_client.o p_plats.o r_sky.o d_deh.o hu_stuff.o \
-m_argv.o p_pspr.o m_bbox.o p_saveg.o r_things.o \
-d_items.o m_cheat.o p_setup.o s_sound.o d_main.o \
-p_sight.o sounds.o m_menu.o p_spec.o info.o st_lib.o \
-m_misc.o p_switch.o l_joy.o p_telept.o st_stuff.o \
-m_random.o p_tick.o l_main.o tables.o p_user.o \
-l_system.o p_ceilng.o v_video.o doomdef.o p_doors.o \
-p_enemy.o r_bsp.o version.o doomstat.o p_floor.o \
-r_data.o w_wad.o p_genlin.o dstrings.o l_udp.o \
-p_inter.o wi_stuff.o r_draw.o f_finale.o p_lights.o \
-z_bmalloc.o p_map.o r_main.o f_wipe.o z_zone.o \
-p_maputl.o r_plane.o
+@I386_ASM_TRUE@lxdoom_OBJECTS =  l_video_trans.o l_video_x.o l_sound.o \
+@I386_ASM_TRUE@am_map.o g_game.o p_mobj.o r_segs.o hu_lib.o lprintf.o \
+@I386_ASM_TRUE@d_client.o p_plats.o r_sky.o d_deh.o hu_stuff.o m_argv.o \
+@I386_ASM_TRUE@p_pspr.o m_bbox.o p_saveg.o r_things.o d_items.o \
+@I386_ASM_TRUE@m_cheat.o p_setup.o s_sound.o d_main.o p_sight.o \
+@I386_ASM_TRUE@sounds.o m_menu.o p_spec.o info.o st_lib.o m_misc.o \
+@I386_ASM_TRUE@p_switch.o l_joy.o p_telept.o st_stuff.o m_random.o \
+@I386_ASM_TRUE@p_tick.o l_main.o tables.o p_user.o l_system.o \
+@I386_ASM_TRUE@p_ceilng.o v_video.o doomdef.o p_doors.o p_enemy.o \
+@I386_ASM_TRUE@r_bsp.o version.o doomstat.o p_floor.o r_data.o w_wad.o \
+@I386_ASM_TRUE@p_genlin.o dstrings.o l_udp.o p_inter.o wi_stuff.o \
+@I386_ASM_TRUE@r_draw.o f_finale.o p_lights.o z_bmalloc.o p_map.o \
+@I386_ASM_TRUE@r_main.o f_wipe.o z_zone.o p_maputl.o r_plane.o \
+@I386_ASM_TRUE@drawspan.o drawcol.o
+@I386_ASM_FALSE@lxdoom_OBJECTS =  l_video_trans.o l_video_x.o l_sound.o \
+@I386_ASM_FALSE@am_map.o g_game.o p_mobj.o r_segs.o hu_lib.o lprintf.o \
+@I386_ASM_FALSE@d_client.o p_plats.o r_sky.o d_deh.o hu_stuff.o \
+@I386_ASM_FALSE@m_argv.o p_pspr.o m_bbox.o p_saveg.o r_things.o \
+@I386_ASM_FALSE@d_items.o m_cheat.o p_setup.o s_sound.o d_main.o \
+@I386_ASM_FALSE@p_sight.o sounds.o m_menu.o p_spec.o info.o st_lib.o \
+@I386_ASM_FALSE@m_misc.o p_switch.o l_joy.o p_telept.o st_stuff.o \
+@I386_ASM_FALSE@m_random.o p_tick.o l_main.o tables.o p_user.o \
+@I386_ASM_FALSE@l_system.o p_ceilng.o v_video.o doomdef.o p_doors.o \
+@I386_ASM_FALSE@p_enemy.o r_bsp.o version.o doomstat.o p_floor.o \
+@I386_ASM_FALSE@r_data.o w_wad.o p_genlin.o dstrings.o l_udp.o \
+@I386_ASM_FALSE@p_inter.o wi_stuff.o r_draw.o f_finale.o p_lights.o \
+@I386_ASM_FALSE@z_bmalloc.o p_map.o r_main.o f_wipe.o z_zone.o \
+@I386_ASM_FALSE@p_maputl.o r_plane.o
 lxdoom_DEPENDENCIES = 
 lxdoom_LDFLAGS = 
 sndserv_OBJECTS =  version.o l_soundsrv.o sounds.o l_soundgen.o
