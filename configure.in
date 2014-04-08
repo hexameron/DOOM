@@ -17,6 +17,7 @@ AM_CONFIG_HEADER(config.h)
 
 dnl --- Checks for programs.
 AC_PROG_CC
+AM_PROG_AS as
 
 dnl --- Checks for typedefs
 AC_TYPE_SIZE_T
@@ -28,6 +29,8 @@ AC_C_BIGENDIAN
 if test "$ac_cv_c_bigendian" != no
 then AC_DEFINE(__BIG_ENDIAN__)
 fi
+
+AM_CONDITIONAL(I386_ASM, test "$NO" = yes)
 
 dnl --- Libraries
 dnl AC_PATH_X

@@ -7,8 +7,8 @@
 #
 #
 gamesdir=$(prefix)/games
-EXTRA_PROGRAMS = lsdldoom lsdoom lxdoom sndserv
-games_PROGRAMS = @BUILD_SDLDOOM@ @BUILD_LSDOOM@ @BUILD_LXDOOM@ @BUILD_SNDSERV@ lxdoom-game-server
+EXTRA_PROGRAMS = lsdldoom
+games_PROGRAMS = @BUILD_SDLDOOM@ 
 EXTRA_DIST = makefile.pre-ac
 
 if I386_ASM
