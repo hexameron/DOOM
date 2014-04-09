@@ -206,7 +206,7 @@ gamestate_t    wipegamestate = GS_DEMOSCREEN;
 extern boolean setsizeneeded;
 extern int     showMessages;
 
-int     rightFrame;
+static int     rightFrame;
 
 void D_Display (void)
 {
@@ -304,7 +304,8 @@ void D_Display (void)
   }
 
   // menus go directly to the screen
-  //M_Drawer();
+  M_Drawer();
+  // 3d effect is broken unless
   // menu is drawn before weapon
 
   NetUpdate();         // send out any new accumulation

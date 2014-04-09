@@ -372,7 +372,7 @@ void I_FinishUpdate (int rightbuffer)
     SDL_Flip(screen);
   } else {
     (*I_ExpandImage)(out_buffer, screens[0]);
-    SDL_Flip(screen);
+    //SDL_Flip(screen);
   }
 }
 
@@ -418,7 +418,7 @@ void I_SetRes(unsigned int width, unsigned int height)
 
 void I_InitGraphics(void)
 {
-  const int depth_list[] = { 0, 8 };
+  const int depth_list[] = { 16, 0 };
   int		n;
   Uint32        init_flags;
   
@@ -436,7 +436,7 @@ void I_InitGraphics(void)
     I_Error("Could not initialize SDL [%s]", SDL_GetError());
   }
 
-  init_flags = SDL_SWSURFACE|SDL_HWPALETTE;
+  init_flags = SDL_SWSURFACE|SDL_HWPALETTE|SDL_NOFRAME;
   if ( M_CheckParm("-fullscreen") ) {
     init_flags |= SDL_FULLSCREEN;
   }

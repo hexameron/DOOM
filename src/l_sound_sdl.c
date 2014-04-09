@@ -111,7 +111,7 @@ void* getsfx( const char* sfxname, int* len )
     sfx = (unsigned char*)W_CacheLumpNum(sfxlump);
 
     // upsample to 16 bit x 44.1Khz (playback is 22khz stereo)
-    paddedsize = (size  * 8) + (SAMPLECOUNT * 4);
+    paddedsize = (size  * 8);
 
     // Allocate from zone memory.
     paddedsfx = (unsigned char*)Z_Malloc( paddedsize+8, PU_STATIC, 0 );
@@ -122,9 +122,9 @@ void* getsfx( const char* sfxname, int* len )
     srcfx = sfx + 8;
     for (i = 9; i < size; i++)
     {
-      s = (int16_t)(*srcfx - 128) * 63;
+      s = (255<<5) - (*srcfx<<6);
       srcfx++;
-      t = (int16_t)(*srcfx - 128) * 63;
+      t = (255<<5) - (*srcfx<<6);
       *upsamps++ = s << 2;
       *upsamps++ = s << 2;
       *upsamps++ = s * 3 + t;
@@ -134,9 +134,6 @@ void* getsfx( const char* sfxname, int* len )
     *upsamps++ = t << 2;
     *upsamps++ = t * 3;
     *upsamps++ = t;
-
-    // Pad with zeros to end of sampleblock
-    for (i = 1; i < (SAMPLECOUNT*2); i++) *upsamps++ = 0;
 
     // Remove the cached lump.
     Z_Free( sfx );
@@ -182,7 +179,7 @@ int addsfx( int sfxid, int volume, int step, int seperation )
     if ( sfxid == sfx_pistol )
           slot = 2;	
     if (slot = -1) {
-	for (i = 4; i < NUM_CHANNELS; i++)
+	for (i = 3; i < NUM_CHANNELS; i++)
 	{
 		handlenum++;
 		if (handlenum >= NUM_CHANNELS) handlenum = 3;
