@@ -271,7 +271,9 @@ void D_Display (void)
       R_DrawViewBorder();
 
     // Now do the drawing
-    if (viewactive)
+    //if (viewactive)
+    // Need Player view because menus are behind guns
+    // .. could disable gun on !viewactive
       R_RenderPlayerView (&players[displayplayer],rightFrame);
     if (automapmode & am_active)
       AM_Drawer();
@@ -304,7 +306,7 @@ void D_Display (void)
   }
 
   // menus go directly to the screen
-  M_Drawer();
+  // M_Drawer();
   // 3d effect is broken unless
   // menu is drawn before weapon
 

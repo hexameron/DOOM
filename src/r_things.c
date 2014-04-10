@@ -986,7 +986,8 @@ void R_DrawMasked(void)
   // draw the psprites on top of everything
 
   // Drawing menu here causes breakage
-  //M_Drawer();
+  // ...when weapon is not being drawn
+  M_Drawer();
 
   // ... except HUD
   // if (!viewangleoffset)
